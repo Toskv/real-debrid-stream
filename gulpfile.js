@@ -38,10 +38,11 @@ gulp.task(clean);
 gulp.task('build', gulp.series(
 	clean,
 	tsAppConfig,
+	tsLint,
 	gulp.parallel(scss, ts),
 	assets,
 	index,
-	typedoc,
+	//typedoc,
 	chromeAppAssets
 ));
 
@@ -89,7 +90,7 @@ function scss() {
 }
 
 function typedoc() {
-	return gulp.src('src/scripts/**/*.ts')
+	return gulp.src(['src/scripts/**/*.ts', 'typings/**/*.d.ts'])
 		.pipe(plugins.typedoc({
 			module: 'commonjs',
 			target: 'es5',
@@ -126,10 +127,14 @@ function tsAppConfig() {
 		.pipe(plugins.connect.reload());
 }
 
-function ts() {
-	var tsResult = gulp.src(['src/scripts/**/*.ts', '!src/scripts/app.config.ts'])
+function tsLint() {
+	return gulp.src(['src/scripts/**/*.ts','!src/scripts/app.config.ts'])
 		.pipe(plugins.tslint())
-		.pipe(plugins.tslint.report('verbose'))
+		.pipe(plugins.tslint.report('verbose'));
+}
+
+function ts() {
+	var tsResult = gulp.src(['src/scripts/**/*.ts', '!src/scripts/app.config.ts', 'typings/**/*.d.ts'])
 		.pipe(plugins.preprocess({ context: env }))
 		.pipe(plugins.inlineNg2Template({ base: 'src/scripts' }))
 		.pipe(plugins.if(env.isDev, plugins.sourcemaps.init()))
